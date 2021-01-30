@@ -8,19 +8,18 @@ build-linux-x64:
   stage: build-linux-x64
   script:
     - dotnet restore
-    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linuxx64
+    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
   artifacts:
     expire_in: 1 week
     paths:
-      - ./publish
-
+      - ./publish/linux-x64
 
 build-win-x64:
-  stage: build-linux-x64
+  stage: build-win-x64
   script:
     - dotnet restore
-    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linuxx64
+    - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
   artifacts:
-    expire_in: 1week
+    expire_in: 1 week
     paths:
-      - ./publish
+      - ./publish/win-64
