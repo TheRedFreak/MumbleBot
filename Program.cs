@@ -58,7 +58,8 @@ namespace MumbleBot
 
             logger.Info("Loading plugins...");
 
-            if (!Directory.Exists(Path.Combine(WorkDir, "plugins"))) Directory.CreateDirectory("plugins");
+            if (!Directory.Exists(Path.Combine(WorkDir, "plugins")))
+                Directory.CreateDirectory(Path.Combine(WorkDir, "plugins"));
 
 
             var pluginConfigFilesPath = Directory.GetFiles(Path.Combine(WorkDir, "plugins"), "*Plugin.json");
