@@ -23,4 +23,4 @@ Build [Windows x64]:
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
   artifacts:
     paths:
-      - ./publish/win-64
+      - ./publish/win-x64
