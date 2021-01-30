@@ -15,7 +15,7 @@ namespace MumbleBot
         // public static Mumble MumbleInstance { get; private set; }
 
         // internal static event EventHandler StopRequested;
-        internal static string ExePath;
+        // internal static string ExePath;
         internal static string WorkDir;
 
         private static bool stopRequested = false;
@@ -28,16 +28,17 @@ namespace MumbleBot
         {
             Thread.CurrentThread.Name = "MainThread";
 
-            ExePath = Assembly.GetEntryAssembly()?.Location;
-            WorkDir = Path.GetDirectoryName(ExePath);
+            // ExePath = Assembly.GetEntryAssembly()?.Location;
+
+            WorkDir = Path.GetDirectoryName(Directory.GetCurrentDirectory());
 
             logger = LogManager.GetLogger("Main");
 
-            if (ExePath == null)
-            {
-                logger.Fatal("Unable to retrieve path of execution!");
-                Environment.Exit(-1);
-            }
+            // if (ExePath == null)
+            // {
+            //     logger.Fatal("Unable to retrieve path of execution!");
+            //     Environment.Exit(-1);
+            // }
 
             if (WorkDir == null)
             {
@@ -47,7 +48,7 @@ namespace MumbleBot
 
             AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { RequestStop(); };
 
-            logger.Info($"Workdir: {Path.GetDirectoryName(ExePath)}");
+            logger.Info($"Workdir: {WorkDir}");
 
 
             logger.Info("Initializing mumble gRPC client...");
