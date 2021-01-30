@@ -10,7 +10,7 @@ buildlinuxx64:
     - dotnet restore
     - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
   artifacts:
-    expire_in: 1 week
+    expireIn: 1 week
     paths:
       - ./publish/linux-x64
 
@@ -20,6 +20,6 @@ buildwinx64:
     - dotnet restore
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
   artifacts:
-    expire_in: 1 week
+    expireIn: 1 week
     paths:
       - ./publish/win-64
