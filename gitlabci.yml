@@ -1,0 +1,26 @@
+﻿image: mcr.microsoft.com/dotnet/sdk:5.0
+
+stages:
+  - build-linux-x64
+  - build-win-x64
+
+build-linux-x64:
+  stage: build-linux-x64
+  script:
+    - dotnet restore
+    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linuxx64
+  artifacts:
+    paths:
+      - ./publish
+    expireIn: 1 week
+
+
+build-win-x64:
+  stage: build-linux-x64
+  script:
+    - dotnet restore
+    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linuxx64
+  artifacts:
+    paths:
+      - ./publish
+    expireIn: 1 week
