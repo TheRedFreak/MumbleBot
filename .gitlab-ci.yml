@@ -6,6 +6,8 @@ stages:
 
 buildlinuxx64:
   stage: buildlinuxx64
+  tags:
+    - Docker
   script:
     - dotnet restore
     - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
@@ -15,6 +17,8 @@ buildlinuxx64:
 
 buildwinx64:
   stage: buildwinx64
+  tags:
+    - Docker
   script:
     - dotnet restore
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
