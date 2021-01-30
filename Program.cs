@@ -30,7 +30,7 @@ namespace MumbleBot
 
             // ExePath = Assembly.GetEntryAssembly()?.Location;
 
-            WorkDir = Path.GetDirectoryName(Directory.GetCurrentDirectory());
+            WorkDir = Directory.GetCurrentDirectory();
 
             logger = LogManager.GetLogger("Main");
 
@@ -60,6 +60,8 @@ namespace MumbleBot
 
             if (!Directory.Exists(Path.Combine(WorkDir, "plugins")))
                 Directory.CreateDirectory(Path.Combine(WorkDir, "plugins"));
+
+            logger.Debug($"Plugins folder: {Path.Combine(WorkDir, "plugins")}");
 
 
             var pluginConfigFilesPath = Directory.GetFiles(Path.Combine(WorkDir, "plugins"), "*Plugin.json");
