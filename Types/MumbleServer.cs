@@ -1,0 +1,213 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Grpc.Core;
+using log4net;
+using MurmurRPC;
+
+namespace MumbleBot.Types
+{
+    public class MumbleServer
+    {
+        private Server Server { get; }
+        private V1.V1Client _client { get; }
+
+        private ILog logger = Program.logger;
+        public uint Id => Server.Id;
+        public Server GetMumbleServer() => Server;
+
+        public long Uptime
+        {
+            get
+            {
+                var server = _client.ServerGet(Server);
+                if (server != null) return Convert.ToInt32(Server.Uptime.Secs);
+                else return -1;
+            }
+        }
+
+        public bool Running => Server.Running;
+
+        public MumbleServer(Server server, V1.V1Client mumble)
+        {
+            Server = server;
+            _client = mumble;
+        }
+
+        public MumbleUser GetUser(string name)
+        {
+            return GetUsers().Find(user => user.Name == name);
+        }
+
+        public List<MumbleUser> GetUsers()
+        {
+            var users = new List<MumbleUser>();
+            var servers = _client.ServerQuery(new Server.Types.Query(), Metadata.Empty);
+            foreach (var server in servers.Servers)
+            {
+                var lusers = _client.UserQuery(new User.Types.Query
+                {
+                    Server = server,
+                });
+
+                foreach (var luser in lusers.Users)
+                {
+                    users.Add(new MumbleUser(luser, _client));
+                }
+            }
+
+            return users;
+        }
+
+        public List<MumbleBan> GetBans()
+        {
+            var tmp = _client.BansGet(new Ban.Types.Query
+            {
+                Server = Server
+            }).Bans.ToList();
+
+            var bans = new List<MumbleBan>();
+
+            foreach (var ban in tmp)
+            {
+                bans.Add(new MumbleBan(ban));
+            }
+
+            return bans;
+        }
+
+        public void UnbanUser(string name)
+        {
+            List<Ban> oldbans = _client.BansGet(new Ban.Types.Query
+            {
+                Server = Server,
+            }).Bans.ToList();
+
+            var list = new Ban.Types.List();
+            list.Server = Server;
+            foreach (var ban in oldbans)
+            {
+                if (ban.Name != name)
+                    list.Bans.Add(ban);
+            }
+
+            _client.BansSet(list);
+        }
+
+        public MumbleConfig GetConfig()
+        {
+            return new(_client.ConfigGet(Server), _client);
+        }
+
+        public void KickUser(uint id, string reason)
+        {
+            var user = _client.UserGet(new User
+            {
+                Id = id,
+            });
+
+            if (user.Server.Id == Server.Id)
+            {
+                _client.UserKick(new User.Types.Kick
+                {
+                    Reason = reason,
+                    Server = Server,
+                    User = user,
+                });
+            }
+        }
+
+        public void KickUser(string name, string reason)
+        {
+            var user = GetUser(name);
+            KickUser(user.Id, reason);
+        }
+
+        public void BanUser(uint id, string reason)
+        {
+            var user = _client.UserGet(new User
+            {
+                Id = id,
+            });
+
+            if (user.Server.Id == Server.Id)
+            {
+                _client.UserKick(new User.Types.Kick
+                {
+                    Reason = reason,
+                    Server = Server,
+                    User = user,
+                });
+            }
+        }
+
+
+        public MumbleTreeChannel GetChannelTree()
+        {
+            var tree = _client.TreeQuery(new Tree.Types.Query
+            {
+                Server = Server,
+            });
+
+
+            var r = RecurseThing(tree);
+
+            return r;
+        }
+
+        private MumbleTreeChannel RecurseThing(Tree tree)
+        {
+            var root = new MumbleTreeChannel
+            {
+                Channel = new MumbleChannel(tree.Channel, _client),
+                Users = tree.Users.Select(x => new MumbleUser(x, _client)).ToList()
+            };
+
+
+            if (tree.Children.Count == 0) return root;
+
+            foreach (var treeChild in tree.Children)
+            {
+                root.Children.Add(RecurseThing(treeChild));
+            }
+
+            foreach (var user in tree.Users)
+            {
+                root.Users.Add(new MumbleUser(user, _client));
+            }
+
+            return root;
+        }
+
+        public MumbleChannel GetChannel(uint id)
+        {
+            return new(_client.ChannelGet(new Channel
+            {
+                Id = id,
+                Server = Server,
+            }), _client);
+        }
+
+        public MumbleChannel CreateChannel(string name, string description = "")
+        {
+            return new(_client.ChannelAdd(new Channel
+            {
+                Server = Server,
+                Name = name,
+                Description = description ?? "",
+                Parent = _client.ChannelGet(new Channel
+                {
+                    Id = 0,
+                    Server = Server
+                })
+            }), _client);
+        }
+    }
+
+    public class MumbleTreeChannel
+    {
+        public MumbleChannel Channel { get; set; }
+        public List<MumbleTreeChannel> Children { get; set; } = new List<MumbleTreeChannel>();
+        public List<MumbleUser> Users { get; set; } = new List<MumbleUser>();
+    }
+}
