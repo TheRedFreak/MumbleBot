@@ -15,8 +15,8 @@ namespace MumbleBot
         // public static Mumble MumbleInstance { get; private set; }
 
         // internal static event EventHandler StopRequested;
-        internal static readonly string ExePath = Assembly.GetEntryAssembly()?.Location;
-        internal static readonly string WorkDir = Path.GetDirectoryName(ExePath);
+        internal static string ExePath;
+        internal static string WorkDir;
 
         private static bool stopRequested = false;
 
@@ -28,15 +28,22 @@ namespace MumbleBot
         {
             Thread.CurrentThread.Name = "MainThread";
 
+            ExePath = Assembly.GetEntryAssembly()?.Location;
+            WorkDir = Path.GetDirectoryName(ExePath);
+
             logger = LogManager.GetLogger("Main");
 
+            if (ExePath == null)
+            {
+                logger.Fatal("Unable to retrieve path of execution!");
+                Environment.Exit(-1);
+            }
 
-
-            logger.Info("Info");
-            logger.Warn("Warning");
-            logger.Error("Error");
-            logger.Fatal("Fatal");
-            logger.Debug("Debug");
+            if (WorkDir == null)
+            {
+                logger.Fatal("Unable to determine WorkDir!");
+                Environment.Exit(-1);
+            }
 
             AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { RequestStop(); };
 
