@@ -1,11 +1,11 @@
 ﻿image: "mcr.microsoft.com/dotnet/sdk:5.0"
 
 stages:
-  - build-linux-x64
-  - build-win-x64
+  - buildlinuxx64
+  - buildwinx64
 
-build-linux-x64:
-  stage: build-linux-x64
+buildlinuxx64:
+  stage: buildlinuxx64
   script:
     - dotnet restore
     - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
@@ -14,8 +14,8 @@ build-linux-x64:
     paths:
       - ./publish/linux-x64
 
-build-win-x64:
-  stage: build-win-x64
+buildwinx64:
+  stage: buildwinx64
   script:
     - dotnet restore
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
