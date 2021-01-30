@@ -1,11 +1,10 @@
 image: "mcr.microsoft.com/dotnet/sdk:5.0"
 
 stages:
-  - buildlinuxx64
-  - buildwinx64
+  - Build
 
-buildlinuxx64:
-  stage: buildlinuxx64
+Build [Linux x64]:
+  stage: Build
   tags:
     - Docker
   script:
@@ -15,8 +14,8 @@ buildlinuxx64:
     paths:
       - ./publish/linux-x64
 
-buildwinx64:
-  stage: buildwinx64
+Build [Windows x64]:
+  stage: Build
   tags:
     - Docker
   script:
