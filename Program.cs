@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
@@ -34,12 +35,6 @@ namespace MumbleBot
 
             logger = LogManager.GetLogger("Main");
 
-            // if (ExePath == null)
-            // {
-            //     logger.Fatal("Unable to retrieve path of execution!");
-            //     Environment.Exit(-1);
-            // }
-
             if (WorkDir == null)
             {
                 logger.Fatal("Unable to determine WorkDir!");
@@ -49,10 +44,31 @@ namespace MumbleBot
             AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { RequestStop(); };
 
             logger.Info($"Workdir: {WorkDir}");
+            logger.Info("Loading settings...");
+
+            BotConfig.Load();
 
 
             logger.Info("Initializing mumble gRPC client...");
-            Mumble.Instance = new Mumble("http://192.168.2.2:50051");
+
+            var ip = BotConfig.cfgMap["address"];
+
+            var uri = new Uri(ip);
+
+            try
+            {
+                using var client = new TcpClient(uri.Host, uri.Port);
+                logger.Info($"{ip} seems to be up. Connecting...");
+            }
+            catch (SocketException ex)
+            {
+                logger.Error($"Unable to ping host {ip}.");
+                Environment.Exit(-1);
+            }
+
+            Mumble.Instance = new Mumble(ip);
+
+
             logger.Info("Client initialized.");
 
 
@@ -128,7 +144,7 @@ namespace MumbleBot
 
                 foreach (var plugin in _plugins)
                 {
-                    logger.Info($"Initializing plugin {plugin.Name} v*{plugin.Version}");
+                    logger.Info($"Initializing plugin {plugin.Name} v{plugin.Version}");
                     var pluginWorkDir = Path.Combine(WorkDir, "plugins", plugin.Name);
                     Directory.CreateDirectory(pluginWorkDir);
                     plugin?.Load();
