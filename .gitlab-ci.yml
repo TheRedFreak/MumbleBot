@@ -10,9 +10,10 @@ Build [Linux x64]:
   script:
     - dotnet restore
     - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
+    - mv publish/linux-x64 MumbleBot
   artifacts:
     paths:
-      - ./publish/linux-x64
+      - ./MumbleBot
 
 Build [Windows x64]:
   stage: Build
@@ -21,6 +22,7 @@ Build [Windows x64]:
   script:
     - dotnet restore
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
+    - mv publish/linux-x64/ MumbleBot/
   artifacts:
     paths:
-      - ./publish/win-x64
+      - ./MumbleBot
