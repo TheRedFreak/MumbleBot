@@ -22,7 +22,7 @@ Build [Windows x64]:
   script:
     - dotnet restore
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
-    - mv publish/linux-x64/ MumbleBot/
+    - mv publish/win-x64/ MumbleBot/
   artifacts:
     paths:
       - ./MumbleBot
