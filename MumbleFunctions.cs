@@ -233,5 +233,42 @@ namespace MumbleBot
         {
             return new(_client.ConfigGetDefault(new Void()), _client);
         }
+
+        public List<MumbleDBUser> GetAllDBUsers()
+        {
+            var ret = new List<MumbleDBUser>();
+            foreach (var server in GetAllServers())
+            {
+                var dbUsers = _client.DatabaseUserQuery(new DatabaseUser.Types.Query
+                {
+                    Server = server.GetMumbleServer()
+                });
+
+                foreach (var dbUsersUser in dbUsers.Users)
+                {
+                    ret.Add(new MumbleDBUser(dbUsersUser, _client));
+                }
+            }
+
+            return ret;
+        }
+    }
+
+    public class MumbleDBUser
+    {
+        private V1.V1Client _client;
+        private DatabaseUser _user;
+
+        public MumbleDBUser(DatabaseUser user, V1.V1Client client)
+        {
+            _client = client;
+            _user = _client.DatabaseUserGet(user);
+        }
+
+        public string Name => _user.Name;
+        public string Comment => _user.Comment;
+        public string Email => _user.Email;
+        public string Hash => _user.Hash;
+        public string LastActive => _user.LastActive;
     }
 }
