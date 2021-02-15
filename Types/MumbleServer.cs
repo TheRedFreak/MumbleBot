@@ -9,24 +9,7 @@ namespace MumbleBot.Types
 {
     public class MumbleServer
     {
-        private Server Server { get; }
-        private V1.V1Client _client { get; }
-
         private ILog logger = Program.logger;
-        public uint Id => Server.Id;
-        public Server GetMumbleServer() => Server;
-
-        public long Uptime
-        {
-            get
-            {
-                var server = _client.ServerGet(Server);
-                if (server != null) return Convert.ToInt32(Server.Uptime.Secs);
-                else return -1;
-            }
-        }
-
-        public bool Running => Server.Running;
 
         public MumbleServer(Server server, V1.V1Client mumble)
         {
@@ -34,9 +17,37 @@ namespace MumbleBot.Types
             _client = mumble;
         }
 
-        public MumbleUser GetUser(string name)
+        private Server Server { get; }
+        private V1.V1Client _client { get; }
+        public uint Id => Server.Id;
+
+        public long Uptime
+        {
+            get
+            {
+                var server = _client.ServerGet(Server);
+                if (server != null) return Convert.ToInt32(Server.Uptime.Secs);
+                return -1;
+            }
+        }
+
+        public bool Running => Server.Running;
+
+        public MumbleChannel Root => GetChannel(0);
+
+        public Server GetMumbleServer()
+        {
+            return Server;
+        }
+
+        public MumbleUser GetUserByName(string name)
         {
             return GetUsers().Find(user => user.Name == name);
+        }
+
+        public MumbleUser GetUserById(uint id)
+        {
+            return GetUsers().Find(user => user.Id == id);
         }
 
         public List<MumbleUser> GetUsers()
@@ -47,13 +58,10 @@ namespace MumbleBot.Types
             {
                 var lusers = _client.UserQuery(new User.Types.Query
                 {
-                    Server = server,
+                    Server = server
                 });
 
-                foreach (var luser in lusers.Users)
-                {
-                    users.Add(new MumbleUser(luser, _client));
-                }
+                foreach (var luser in lusers.Users) users.Add(new MumbleUser(luser, _client));
             }
 
             return users;
@@ -68,28 +76,23 @@ namespace MumbleBot.Types
 
             var bans = new List<MumbleBan>();
 
-            foreach (var ban in tmp)
-            {
-                bans.Add(new MumbleBan(ban));
-            }
+            foreach (var ban in tmp) bans.Add(new MumbleBan(ban));
 
             return bans;
         }
 
         public void UnbanUser(string name)
         {
-            List<Ban> oldbans = _client.BansGet(new Ban.Types.Query
+            var oldbans = _client.BansGet(new Ban.Types.Query
             {
-                Server = Server,
+                Server = Server
             }).Bans.ToList();
 
             var list = new Ban.Types.List();
             list.Server = Server;
             foreach (var ban in oldbans)
-            {
                 if (ban.Name != name)
                     list.Bans.Add(ban);
-            }
 
             _client.BansSet(list);
         }
@@ -103,23 +106,21 @@ namespace MumbleBot.Types
         {
             var user = _client.UserGet(new User
             {
-                Id = id,
+                Id = id
             });
 
             if (user.Server.Id == Server.Id)
-            {
                 _client.UserKick(new User.Types.Kick
                 {
                     Reason = reason,
                     Server = Server,
-                    User = user,
+                    User = user
                 });
-            }
         }
 
         public void KickUser(string name, string reason)
         {
-            var user = GetUser(name);
+            var user = GetUserByName(name);
             KickUser(user.Id, reason);
         }
 
@@ -127,18 +128,16 @@ namespace MumbleBot.Types
         {
             var user = _client.UserGet(new User
             {
-                Id = id,
+                Id = id
             });
 
             if (user.Server.Id == Server.Id)
-            {
                 _client.UserKick(new User.Types.Kick
                 {
                     Reason = reason,
                     Server = Server,
-                    User = user,
+                    User = user
                 });
-            }
         }
 
 
@@ -146,7 +145,7 @@ namespace MumbleBot.Types
         {
             var tree = _client.TreeQuery(new Tree.Types.Query
             {
-                Server = Server,
+                Server = Server
             });
 
 
@@ -166,15 +165,12 @@ namespace MumbleBot.Types
 
             if (tree.Children.Count == 0) return root;
 
-            foreach (var treeChild in tree.Children)
-            {
-                root.Children.Add(RecurseThing(treeChild));
-            }
-
-            foreach (var user in tree.Users)
-            {
-                root.Users.Add(new MumbleUser(user, _client));
-            }
+            foreach (var treeChild in tree.Children) root.Children.Add(RecurseThing(treeChild));
+            // Duplicate??
+            // foreach (var user in tree.Users)
+            // {
+            //     root.Users.Add(new MumbleUser(user, _client));
+            // }
 
             return root;
         }
@@ -184,7 +180,7 @@ namespace MumbleBot.Types
             return new(_client.ChannelGet(new Channel
             {
                 Id = id,
-                Server = Server,
+                Server = Server
             }), _client);
         }
 
@@ -207,7 +203,7 @@ namespace MumbleBot.Types
     public class MumbleTreeChannel
     {
         public MumbleChannel Channel { get; set; }
-        public List<MumbleTreeChannel> Children { get; set; } = new List<MumbleTreeChannel>();
-        public List<MumbleUser> Users { get; set; } = new List<MumbleUser>();
+        public List<MumbleTreeChannel> Children { get; set; } = new();
+        public List<MumbleUser> Users { get; set; } = new();
     }
 }
