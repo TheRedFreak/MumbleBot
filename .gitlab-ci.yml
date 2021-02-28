@@ -1,7 +1,11 @@
 image: "mcr.microsoft.com/dotnet/sdk:5.0"
 
+include:
+  template: Jobs/Code-Quality.gitlab-ci.yml
+
 stages:
   - Build
+  - CodeQuality
 
 Build [Linux x64]:
   stage: Build
@@ -26,3 +30,18 @@ Build [Windows x64]:
   artifacts:
     paths:
       - ./MumbleBot
+
+Code Quality Report:
+  stage: CodeQuality
+  tags:
+    - Docker_6
+  artifacts:
+    paths: [gl-code-quality-report.json]
+
+Code Quality Report [html]:
+  stage: CodeQuality
+  extends: Code Quality Report
+  variables:
+    REPORT_FORMAT: html
+  artifacts:
+    paths: [gl-code-quality-report.html]
