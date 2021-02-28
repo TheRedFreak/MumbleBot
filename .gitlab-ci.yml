@@ -30,6 +30,11 @@ Build [Windows x64]:
   artifacts:
     paths:
       - ./MumbleBot
+      
+code_quality:
+  stage: test
+  tags:
+    - Docker_6
 
 Code Quality Report:
   stage: test
