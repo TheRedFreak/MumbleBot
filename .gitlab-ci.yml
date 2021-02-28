@@ -41,8 +41,6 @@ Code Quality Report:
   extends: code_quality
   tags:
     - Docker_6
-  script:
-    - ls -lhas
   artifacts:
     paths: [gl-code-quality-report.json]
 
@@ -51,8 +49,6 @@ Code Quality Report [html]:
   extends: Code Quality Report
   tags: 
     - Docker_6
-  script:
-    - ls -lhas
   variables:
     REPORT_FORMAT: html
   artifacts:
