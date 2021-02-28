@@ -9,20 +9,22 @@ namespace MumbleBot
     {
         internal V1.V1Client _client;
 
-        private ILog logger;
-
-        public static Mumble Instance { get; internal set; }
-
-        private string Address { get; set; }
+        private readonly ILog logger;
 
         public Mumble(string address = "http://127.0.0.1:50051")
         {
-            this.Address = address;
+            Address = address;
             logger = LogManager.GetLogger("Mumble");
             eventLogger = LogManager.GetLogger("Events");
+
             var channel = GrpcChannel.ForAddress(address);
+
             _client = new V1.V1Client(channel);
         }
+
+        public static Mumble Instance { get; internal set; }
+
+        private string Address { get; }
 
         internal void Start()
         {
@@ -50,15 +52,40 @@ namespace MumbleBot
                     var cmd = msg.Split(" ")[1];
                     var args = msg.Split(" ").TakeLast(msg.Split(" ").Length - 2).ToArray();
 
-                    if (cmd == "stop")
+                    switch (cmd)
                     {
-                        if (user.HasAdmin())
+                        case "stop":
                         {
-                            user.SendMessage("Ok, Requesting shutdown... Thank you!");
-                            Program.RequestStop();
+                            if (user.HasAdmin())
+                            {
+                                user.SendMessage("Ok, Requesting shutdown... Thank you!");
+                                Program.RequestStop();
+                            }
+
+                            break;
                         }
+                        case "ping":
+                            user.SendMessage("Pong");
+                            break;
                     }
                 }
+            };
+
+            UserConnected += delegate(object? sender, UserConnectedEvent ev)
+            {
+                eventLogger.Info($"User {ev.User.Name} ({ev.User.Id}) joined.");
+                var user = ev.User;
+
+                foreach (var contextAction in registeredContextActions)
+                    _client.ContextActionAdd(new MurmurRPC.ContextAction
+                    {
+                        Action = contextAction.Value.Action,
+                        Channel = contextAction.Value.Channel?.GetMumbleChannel(),
+                        Server = contextAction.Value.Server?.GetMumbleServer(),
+                        Context = (uint) contextAction.Value.Context,
+                        Text = contextAction.Value.Text,
+                        User = user.GetMumbleUser()
+                    });
             };
 
             // var vServerEvents = new Thread(MumbleVServerEventThread) {Name = "MumbleVServerEventThread"};

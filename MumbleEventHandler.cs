@@ -40,6 +40,8 @@ namespace MumbleBot
                 vServerEvents.Start(serv);
 
                 // Todo Wtf? 
+                // It seems i have to specify the action and stuff.
+                // Currently trying to create a HelperThingy for this...
                 // var vServerContextActionEvents = new Thread(MumbleVServerContextActionEventThread)
                 //     {Name = $"MumbleVServer{serv.Id}ContextActionEventThread"};
                 // vServerContextActionEvents.Start(serv);
@@ -70,45 +72,45 @@ namespace MumbleBot
             eventLogger.Info("Server event thread stopped.");
         }
 
-        private async void MumbleVServerContextActionEventThread(object param)
-        {
-            if (param is not MumbleServer)
-            {
-                eventLogger.Warn("Unable to start VServer ContextAction thread. Param is not MumbleServer!");
-                return;
-            }
+        // Trying to figure things out...
 
-            var server = _client.ServerGet(new Server
-            {
-                Id = ((MumbleServer) param).Id
-            });
-
-
-            eventLogger.Info($"Server ContextAction event thread for server {server.Id} started.");
-
-            using (var events = _client.ContextActionEvents(new ContextAction
-            {
-                Server = server,
-                Text = "test",
-                Action = "test",
-            }, Metadata.Empty))
-            {
-                if (events is null)
-                {
-                    eventLogger.Error($"Unable to get VServer {((MumbleServer) param).Id}'s ContextActionEventStream!");
-                    return;
-                }
-
-                await foreach (var ev in events.ResponseStream.ReadAllAsync())
-                {
-                    OnContextAction(ev.Action, ev.Actor, ev.Channel, ev.Context, ev.Server, ev.Text, ev.User);
-
-                    eventLogger.Debug($"CONTEXTEVENT: {ev.Action} {ev.Server.Id}");
-                }
-            }
-
-            eventLogger.Info("Server ContextAction event thread stopped.");
-        }
+        // private async void MumbleVServerContextActionEventThread(object param)
+        // {
+        //     if (param is not MumbleServer)
+        //     {
+        //         eventLogger.Warn("Unable to start VServer ContextAction thread. Param is not MumbleServer!");
+        //         return;
+        //     }
+        //
+        //     var server = _client.ServerGet(new Server
+        //     {
+        //         Id = ((MumbleServer) param).Id
+        //     });
+        //
+        //
+        //     eventLogger.Info($"Server ContextAction event thread for server {server.Id} started.");
+        //
+        //     using (var events = _client.ContextActionEvents(new ContextAction
+        //     {
+        //         Server = server,
+        //     }, Metadata.Empty))
+        //     {
+        //         if (events is null)
+        //         {
+        //             eventLogger.Error($"Unable to get VServer {((MumbleServer) param).Id}'s ContextActionEventStream!");
+        //             return;
+        //         }
+        //
+        //         await foreach (var ev in events.ResponseStream.ReadAllAsync())
+        //         {
+        //             OnContextAction(ev.Action, ev.Actor, ev.Channel, ev.Context, ev.Server, ev.Text, ev.User);
+        //
+        //             eventLogger.Debug($"CONTEXTEVENT: {ev.Action} {ev.Server.Id}");
+        //         }
+        //     }
+        //
+        //     eventLogger.Info("Server ContextAction event thread stopped.");
+        // }
 
         private async void MumbleVServerEventThread(object param)
         {

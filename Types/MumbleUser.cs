@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Grpc.Core;
 using MurmurRPC;
@@ -8,8 +7,14 @@ namespace MumbleBot.Types
 {
     public class MumbleUser
     {
-        private readonly User _user;
         private readonly V1.V1Client _client;
+        private readonly User _user;
+
+        public MumbleUser(User user, V1.V1Client client)
+        {
+            _client = client;
+            _user = _client.UserGet(user);
+        }
 
         public string Name => _user.Name;
         public uint Id => _user.Id;
@@ -19,13 +24,14 @@ namespace MumbleBot.Types
         public string Identity => _client.UserGet(_user).PluginIdentity;
         public byte[] Context => _client.UserGet(_user).PluginContext.ToByteArray();
 
-        public User GetMumbleUser() => _user;
-        public Server GetMumbleServer() => _user.Server;
-
-        public MumbleUser(User user, V1.V1Client client)
+        public User GetMumbleUser()
         {
-            _client = client;
-            _user = _client.UserGet(user);
+            return _user;
+        }
+
+        public Server GetMumbleServer()
+        {
+            return _user.Server;
         }
 
         public void Kick(string reason = "You have been kicked by an operator.")
@@ -40,7 +46,7 @@ namespace MumbleBot.Types
 
         public void Ban(string reason = "You have been banned by an operator.")
         {
-            List<Ban> s = _client.BansGet(new Ban.Types.Query
+            var s = _client.BansGet(new Ban.Types.Query
             {
                 Server = _user.Server
             }).Bans.ToList();
@@ -64,10 +70,7 @@ namespace MumbleBot.Types
 
             var list = new Ban.Types.List();
             list.Server = _user.Server;
-            foreach (var ban in s)
-            {
-                list.Bans.Add(ban);
-            }
+            foreach (var ban in s) list.Bans.Add(ban);
 
             _client.BansSet(list);
             Kick(reason);
@@ -75,7 +78,7 @@ namespace MumbleBot.Types
 
         public void Ban(TimeSpan time, string reason = "You have been banned by an operator.")
         {
-            List<Ban> s = _client.BansGet(new Ban.Types.Query
+            var s = _client.BansGet(new Ban.Types.Query
             {
                 Server = _user.Server
             }).Bans.ToList();
@@ -83,7 +86,7 @@ namespace MumbleBot.Types
             var dbuser = _client.DatabaseUserGet(new DatabaseUser
             {
                 Id = _user.Id,
-                Server = _user.Server,
+                Server = _user.Server
             });
 
 
@@ -101,10 +104,7 @@ namespace MumbleBot.Types
 
             var list = new Ban.Types.List();
             list.Server = _user.Server;
-            foreach (var ban in s)
-            {
-                list.Bans.Add(ban);
-            }
+            foreach (var ban in s) list.Bans.Add(ban);
 
             _client.BansSet(list);
             Kick(reason);
@@ -144,7 +144,7 @@ namespace MumbleBot.Types
             return hasBanSetInRoot;
         }
 
-        bool IsBitSet(byte b, int pos)
+        private bool IsBitSet(byte b, int pos)
         {
             return (b & (1 << pos)) != 0;
         }
@@ -170,5 +170,72 @@ namespace MumbleBot.Types
             _user.Channel = channel;
             _client.UserUpdate(_user);
         }
+
+        // /// <summary>
+        // /// AddContextAction adds a context action to the users client server region.<br/>
+        // /// Added context actions are valid until:<br/>
+        // /// - The context action is removed with ContextActionRemove, or<br/>
+        // /// - The user disconnects from the server, or<br/>
+        // /// - The server stops.<br/>
+        // /// </summary>
+        // /// <param name="action">The action which gets executed. (The string reference to this event)</param>
+        // /// <param name="text">The text which is displayed to the user.</param>
+        // public void AddContextActionServer(string action, string text)
+        // {
+        //
+        //     _client.ContextActionAdd(new MurmurRPC.ContextAction
+        //     {
+        //         Action = action,
+        //         Text = text,
+        //         Server = Server,
+        //         Context = (uint) ContextAction.Types.Context.Server,
+        //         User = _user
+        //     });
+        // }
+        //
+        // /// <summary>
+        // /// AddContextAction adds a context action to the users client channel menu.<br/>
+        // /// Added context actions are valid until:<br/>
+        // /// - The context action is removed with ContextActionRemove, or<br/>
+        // /// - The user disconnects from the server, or<br/>
+        // /// - The server stops.<br/>
+        // /// </summary>
+        // /// <param name="action">The action which gets executed. (The string reference to this event)</param>
+        // /// <param name="text">The text which is displayed to the user.</param>
+        // /// <param name="channel">The MumbleChannel on which the action should be displayed.</param>
+        // public void AddContextActionChannel(string action, string text, MumbleChannel channel)
+        // {
+        //
+        //     _client.ContextActionAdd(new MurmurRPC.ContextAction
+        //     {
+        //         Action = action,
+        //         Text = text,
+        //         Server = Server,
+        //         Context = (uint) MurmurRPC.ContextAction.Types.Context.Server,
+        //         Channel = _client.ChannelGet(new Channel{Id = channel.Id}),
+        //         User = _user
+        //     });
+        // }
+        //
+        // /// <summary>
+        // /// AddContextAction adds a context action to the users client users region.<br/>
+        // /// Added context actions are valid until:<br/>
+        // /// - The context action is removed with ContextActionRemove, or<br/>
+        // /// - The user disconnects from the server, or<br/>
+        // /// - The server stops.<br/>
+        // /// </summary>
+        // /// <param name="action">The action which gets executed. (The string reference to this event)</param>
+        // /// <param name="text">The text which is displayed to the user.</param>
+        // public void AddContextActionUser(string action, string text)
+        // {
+        //
+        //     _client.ContextActionAdd(new ContextAction
+        //     {
+        //         Action = action,
+        //         Text = text,
+        //         Context = (uint) ContextAction.Types.Context.Server,
+        //         User = _user
+        //     });
+        // }
     }
 }

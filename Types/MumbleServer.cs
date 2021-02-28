@@ -35,6 +35,8 @@ namespace MumbleBot.Types
 
         public MumbleChannel Root => GetChannel(0);
 
+        public string Name => GetConfig().GetValue("registerName");
+
         public Server GetMumbleServer()
         {
             return Server;
@@ -166,11 +168,6 @@ namespace MumbleBot.Types
             if (tree.Children.Count == 0) return root;
 
             foreach (var treeChild in tree.Children) root.Children.Add(RecurseThing(treeChild));
-            // Duplicate??
-            // foreach (var user in tree.Users)
-            // {
-            //     root.Users.Add(new MumbleUser(user, _client));
-            // }
 
             return root;
         }
@@ -198,12 +195,5 @@ namespace MumbleBot.Types
                 })
             }), _client);
         }
-    }
-
-    public class MumbleTreeChannel
-    {
-        public MumbleChannel Channel { get; set; }
-        public List<MumbleTreeChannel> Children { get; set; } = new();
-        public List<MumbleUser> Users { get; set; } = new();
     }
 }

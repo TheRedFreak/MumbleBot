@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Grpc.Core;
+using MumbleBot.ContextAction;
 using MumbleBot.Types;
 using MurmurRPC;
 
@@ -8,8 +9,10 @@ namespace MumbleBot
 {
     public partial class Mumble
     {
+        private readonly Dictionary<string, MumbleContextAction> registeredContextActions = new();
+
         /// <summary>
-        /// Get an exact user with their id.
+        ///     Get an exact user with their id.
         /// </summary>
         /// <param name="id">The id to look for.</param>
         /// <returns>A <see cref="User">User</see> object or null.</returns>
@@ -19,7 +22,7 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Get an exact user with their name.
+        ///     Get an exact user with their name.
         /// </summary>
         /// <param name="name">The name to look for.</param>
         /// <returns>A <see cref="MumbleUser">User</see> object or null.</returns>
@@ -29,10 +32,13 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Get a list of users with similarity to "name".
+        ///     Get a list of users with similarity to "name".
         /// </summary>
         /// <param name="name">The name to look for.</param>
-        /// <param name="edits">The maximum edits for a name to be included. See <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a></param>
+        /// <param name="edits">
+        ///     The maximum edits for a name to be included. See
+        ///     <a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a>
+        /// </param>
         /// <returns>A <see cref="MumbleUser">User</see> object or null.</returns>
         public List<MumbleUser> GetSimilarUser(string name, double edits = 5.0)
         {
@@ -41,7 +47,7 @@ namespace MumbleBot
 
 
         /// <summary>
-        /// Gets all users.
+        ///     Gets all users.
         /// </summary>
         /// <returns>Returns a <see cref="List{T}">List</see> of users.</returns>
         public List<MumbleUser> GetAllUsers()
@@ -52,20 +58,17 @@ namespace MumbleBot
             {
                 var lusers = _client.UserQuery(new User.Types.Query
                 {
-                    Server = server,
+                    Server = server
                 });
 
-                foreach (var luser in lusers.Users)
-                {
-                    users.Add(new MumbleUser(luser, _client));
-                }
+                foreach (var luser in lusers.Users) users.Add(new MumbleUser(luser, _client));
             }
 
             return users;
         }
 
         /// <summary>
-        /// Kick a user by their id.
+        ///     Kick a user by their id.
         /// </summary>
         /// <param name="id">The user's id.</param>
         /// <param name="reason">The reason to kick them.</param>
@@ -76,12 +79,12 @@ namespace MumbleBot
             {
                 User = user.GetMumbleUser(),
                 Reason = reason,
-                Server = user.GetMumbleServer(),
+                Server = user.GetMumbleServer()
             });
         }
 
         /// <summary>
-        /// Kick a user by name.
+        ///     Kick a user by name.
         /// </summary>
         /// <param name="name">The user's name</param>
         /// <param name="reason">The reason to kick them.</param>
@@ -93,7 +96,7 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Get a specific Server by id.
+        ///     Get a specific Server by id.
         /// </summary>
         /// <param name="id">The server id.</param>
         /// <returns>Returns the server specified with <paramref name="id">id</paramref>.</returns>
@@ -103,22 +106,20 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Get every server. 
+        ///     Get every server.
         /// </summary>
         /// <returns>Returns a <see cref="List{T}">list</see> of servers</returns>
         public List<MumbleServer> GetAllServers()
         {
-            List<MumbleServer> servers = new List<MumbleServer>();
+            var servers = new List<MumbleServer>();
             foreach (var server in _client.ServerQuery(new Server.Types.Query(), Metadata.Empty).Servers.ToList())
-            {
                 servers.Add(new MumbleServer(server, _client));
-            }
 
             return servers;
         }
 
         /// <summary>
-        /// Gets the complete config of the server.
+        ///     Gets the complete config of the server.
         /// </summary>
         /// <param name="id">The server's id.</param>
         /// <returns>The server's config.</returns>
@@ -131,7 +132,7 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Gets the server's uptime.
+        ///     Gets the server's uptime.
         /// </summary>
         /// <param name="id">The server's id.</param>
         /// <returns>The time in seconds, the server has been up.</returns>
@@ -141,7 +142,7 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Gets the server's version.
+        ///     Gets the server's version.
         /// </summary>
         /// <returns>The server's version.</returns>
         public Version GetVersion()
@@ -150,16 +151,16 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Creates a new Serverinstance.
+        ///     Creates a new Serverinstance.
         /// </summary>
-        /// <returns>Returns a <see cref="MumbleServer"/> instance.</returns>
+        /// <returns>Returns a <see cref="MumbleServer" /> instance.</returns>
         public MumbleServer CreateServer()
         {
             return new(_client.ServerCreate(new Void()), _client);
         }
 
         /// <summary>
-        /// Starts the given server.
+        ///     Starts the given server.
         /// </summary>
         /// <param name="id">The id of the server.</param>
         public void StartServer(uint id)
@@ -183,7 +184,7 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Stops the given server.
+        ///     Stops the given server.
         /// </summary>
         /// <param name="id">The server's id.</param>
         public void StopServer(uint id)
@@ -207,7 +208,7 @@ namespace MumbleBot
         }
 
         /// <summary>
-        /// Deletes the given server.
+        ///     Deletes the given server.
         /// </summary>
         /// <param name="id">The server's id.</param>
         public void DeleteServer(uint id)
@@ -226,7 +227,7 @@ namespace MumbleBot
 
 
         /// <summary>
-        /// Query the default config.
+        ///     Query the default config.
         /// </summary>
         /// <returns>Returns the default config for all servers.</returns>
         public MumbleDefaultConfig GetDefaultConfig()
@@ -244,31 +245,40 @@ namespace MumbleBot
                     Server = server.GetMumbleServer()
                 });
 
-                foreach (var dbUsersUser in dbUsers.Users)
-                {
-                    ret.Add(new MumbleDBUser(dbUsersUser, _client));
-                }
+                foreach (var dbUsersUser in dbUsers.Users) ret.Add(new MumbleDBUser(dbUsersUser, _client));
             }
 
             return ret;
         }
-    }
 
-    public class MumbleDBUser
-    {
-        private V1.V1Client _client;
-        private DatabaseUser _user;
-
-        public MumbleDBUser(DatabaseUser user, V1.V1Client client)
+        public MumbleContextAction CreateContextAction(string action, string text, MumbleServer server,
+            ContextActionContext context)
         {
-            _client = client;
-            _user = _client.DatabaseUserGet(user);
+            return CreateContextAction(action, text, server, null, null, context);
         }
 
-        public string Name => _user.Name;
-        public string Comment => _user.Comment;
-        public string Email => _user.Email;
-        public string Hash => _user.Hash;
-        public string LastActive => _user.LastActive;
+        public MumbleContextAction CreateContextAction(string action, string text, MumbleServer server, MumbleUser user,
+            ContextActionContext context)
+        {
+            return CreateContextAction(action, text, server, null, user, context);
+        }
+
+        public MumbleContextAction CreateContextAction(string action, string text, MumbleServer server,
+            MumbleChannel channel, ContextActionContext context)
+        {
+            return CreateContextAction(action, text, server, channel, null, context);
+        }
+
+        public MumbleContextAction CreateContextAction(string action, string text, MumbleServer server,
+            MumbleChannel channel, MumbleUser user, ContextActionContext context)
+        {
+            if (registeredContextActions.ContainsKey(action)) return null;
+
+            var listener = new MumbleContextAction(action, text, server, channel, user, context, _client);
+
+            registeredContextActions.Add(action, listener);
+
+            return listener;
+        }
     }
 }
