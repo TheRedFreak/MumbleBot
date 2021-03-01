@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using log4net;
@@ -19,15 +18,33 @@ namespace MumbleBot
         // internal static string ExePath;
         internal static string WorkDir;
 
-        private static bool stopRequested = false;
+        private static bool stopRequested;
 
-        private static IEnumerable<IPlugin> _plugins;
+        private static List<IPlugin> _plugins;
 
         internal static ILog logger { get; private set; }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Thread.CurrentThread.Name = "MainThread";
+
+            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+            {
+                logger.Info("Exiting...");
+
+                if (_plugins != null && _plugins.Count > 0)
+                {
+                    logger.Info($"Disabling {_plugins.Count} plugins...");
+                    foreach (var plugin in _plugins)
+                    {
+                        logger.Info($"Disabling plugin {plugin.Name}...");
+                        plugin.Stop();
+                        logger.Info($"Plugin {plugin.Name} disabled!");
+                    }
+                }
+
+                logger.Info("Goodbye, thank you! :)");
+            };
 
             // ExePath = Assembly.GetEntryAssembly()?.Location;
 
@@ -81,7 +98,7 @@ namespace MumbleBot
 
 
             var pluginConfigFilesPath = Directory.GetFiles(Path.Combine(WorkDir, "plugins"), "*Plugin.json");
-            var list = new List<String>();
+            var list = new List<string>();
             foreach (var configPath in pluginConfigFilesPath)
             {
                 logger.Debug($"Parsing {configPath}");
@@ -95,7 +112,7 @@ namespace MumbleBot
                     var libPaths = Directory.GetFiles(Path.Combine(WorkDir, "plugins", config.Libs), "*.dll");
 
                     logger.Debug($"{config.Name} has {libPaths.Length} libs to load. Loading them!");
-                    foreach (string libPath in libPaths)
+                    foreach (var libPath in libPaths)
                     {
                         var loadCOntext = new PluginLibLoadContext(configPath);
                         var lib = loadCOntext.LoadFromAssemblyPath(libPath);
@@ -123,7 +140,7 @@ namespace MumbleBot
                 _plugins = pluginPaths.SelectMany(pluginPath =>
                 {
                     logger.Debug($"Loading {pluginPath}");
-                    Assembly pluginAssembly = PluginLoader.LoadPlugin(pluginPath);
+                    var pluginAssembly = PluginLoader.LoadPlugin(pluginPath);
 
                     var config =
                         JsonSerializer.Deserialize<PluginConfig>(
@@ -167,10 +184,7 @@ namespace MumbleBot
 
             logger.Info("Plugins started!");
 
-            while (!stopRequested)
-            {
-                Thread.Sleep(200); // Because it should not exit!
-            }
+            while (!stopRequested) Thread.Sleep(200); // Because it should not exit!
 
 
             DoShutdown();
@@ -187,7 +201,6 @@ namespace MumbleBot
             logger.Info("Disabling plugins...");
 
             foreach (var plugin in _plugins)
-            {
                 try
                 {
                     plugin?.Stop();
@@ -205,7 +218,6 @@ namespace MumbleBot
                         logger.Error("A entry in the pluginlist was null. You can probably ignore this.");
                     }
                 }
-            }
 
             logger.Info("Thank you! :)");
             Environment.Exit(0);
