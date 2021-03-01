@@ -226,42 +226,4 @@ namespace MumbleBot
                 new ContextActionEvent(action, text, actor, user, channel, context, server, _client));
         }
     }
-
-    public class ContextActionEvent
-    {
-        private readonly string _action;
-        private readonly string _text;
-        private readonly MumbleUser _actor;
-        private readonly MumbleUser _user;
-        private readonly MumbleChannel _channel;
-        private readonly uint _context;
-        private readonly MumbleServer _server;
-
-        public ContextActionEvent(string action, string text, User actor, User user, Channel channel, uint context,
-            Server server, V1.V1Client client)
-        {
-            _action = action;
-            _text = text;
-            _actor = new MumbleUser(actor, client);
-            _user = new MumbleUser(user, client);
-            _channel = new MumbleChannel(channel, client);
-            _context = context;
-            _server = new MumbleServer(server, client);
-        }
-
-
-        public string Action => _action;
-
-        public string Text => _text;
-
-        public MumbleUser Actor => _actor;
-
-        public MumbleUser User => _user;
-
-        public MumbleChannel Channel => _channel;
-
-        public uint Context => _context;
-
-        public MumbleServer Server => _server;
-    }
 }
