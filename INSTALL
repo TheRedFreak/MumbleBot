@@ -1,10 +1,10 @@
-﻿
+
 Deps: 
-apt install wget   // Tested in a Docker Debian container.
+apt install curl   // Tested in a Docker Debian container.
 
 Other dependencies like libgssapi-krb5-2 and libicu63 are installed via the script down below.
 
 Install:
 
-bash <(wget -O - https://assets.thefreaks.eu/MumbleBot/install.sh)
+bash <(curl -Ss https://assets.thefreaks.eu/MumbleBot/install.sh)
 
