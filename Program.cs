@@ -12,10 +12,6 @@ namespace MumbleBot
 {
     public class Program
     {
-        // public static Mumble MumbleInstance { get; private set; }
-
-        // internal static event EventHandler StopRequested;
-        // internal static string ExePath;
         internal static string WorkDir;
 
         private static bool stopRequested;
@@ -28,25 +24,8 @@ namespace MumbleBot
         {
             Thread.CurrentThread.Name = "MainThread";
 
-            AppDomain.CurrentDomain.ProcessExit += (s, e) =>
-            {
-                logger.Info("Exiting...");
-
-                if (_plugins != null && _plugins.Count > 0)
-                {
-                    logger.Info($"Disabling {_plugins.Count} plugins...");
-                    foreach (var plugin in _plugins)
-                    {
-                        logger.Info($"Disabling plugin {plugin.Name}...");
-                        plugin.Stop();
-                        logger.Info($"Plugin {plugin.Name} disabled!");
-                    }
-                }
-
-                logger.Info("Goodbye, thank you! :)");
-            };
-
-            // ExePath = Assembly.GetEntryAssembly()?.Location;
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => stopRequested = true;
+            Console.CancelKeyPress += (_, _) => stopRequested = true;
 
             WorkDir = Directory.GetCurrentDirectory();
 
@@ -198,28 +177,42 @@ namespace MumbleBot
 
         private static void DoShutdown()
         {
+            logger.Info("Exiting...");
             logger.Info("Disabling plugins...");
 
-            foreach (var plugin in _plugins)
-                try
-                {
-                    plugin?.Stop();
-                }
-                catch (Exception e)
-                {
-                    if (plugin != null)
-                    {
-                        logger.Error(e);
-                        logger.Error($"Exception caught while disabling Plugin {plugin.Name}");
-                    }
-                    else
-                    {
-                        logger.Error(e);
-                        logger.Error("A entry in the pluginlist was null. You can probably ignore this.");
-                    }
-                }
 
-            logger.Info("Thank you! :)");
+            if (_plugins != null && _plugins.Count > 0)
+            {
+                logger.Info($"Disabling {_plugins.Count} plugins...");
+                foreach (var plugin in _plugins)
+                {
+                    logger.Info($"Disabling plugin {plugin.Name}...");
+                    plugin.Stop();
+                    logger.Info($"Plugin {plugin.Name} disabled!");
+                }
+            }
+
+            if (_plugins != null && _plugins.Count > 0)
+                foreach (var plugin in _plugins)
+                    try
+                    {
+                        plugin?.Stop();
+                    }
+                    catch (Exception e)
+                    {
+                        if (plugin != null)
+                        {
+                            logger.Error(e);
+                            logger.Error($"Exception caught while disabling Plugin {plugin.Name}");
+                        }
+                        else
+                        {
+                            logger.Error(e);
+                            logger.Error("A entry on the pluginlist was null. You can probably ignore this.");
+                        }
+                    }
+
+            logger.Info("Goodbye, thank you! :)");
             Environment.Exit(0);
         }
     }
