@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,8 +24,11 @@ namespace MumbleBot
         {
             Thread.CurrentThread.Name = "MainThread";
 
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => stopRequested = true;
-            Console.CancelKeyPress += (_, _) => stopRequested = true;
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => stopRequested = true; // Cannot cancel this event...
+            Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) => {
+                e.Cancel = true;
+                RequestStop();
+            };
 
             WorkDir = Directory.GetCurrentDirectory();
 
@@ -36,8 +39,6 @@ namespace MumbleBot
                 logger.Fatal("Unable to determine WorkDir!");
                 Environment.Exit(-1);
             }
-
-            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => { RequestStop(); };
 
             logger.Info($"Workdir: {WorkDir}");
             logger.Info("Loading settings...");
