@@ -1,10 +1,11 @@
 image: "mcr.microsoft.com/dotnet/sdk:5.0"
 
 stages:
-  - Build
+  - build
+  - sign
 
-Build [Linux x64]:
-  stage: Build
+linux-x64:
+  stage: build
   tags:
     - Docker
   script:
@@ -15,8 +16,8 @@ Build [Linux x64]:
     paths:
       - ./MumbleBot
 
-Build [Windows x64]:
-  stage: Build
+win-x64:
+  stage: build
   tags:
     - Docker
   script:
@@ -26,3 +27,19 @@ Build [Windows x64]:
   artifacts:
     paths:
       - ./MumbleBot
+
+sign:
+  stage: sign
+  tags:
+    - Linux
+    - Docker
+  script:
+    - "apt-get update && apt-get install -y gpg"
+    - "export GPG_TTY=$(tty)"
+    - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
+    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output MumbleBot/MumbleBot.exe.sig --detach-sig MumbleBot.exe"
+  artifacts:
+    name: SignedFiles
+    paths:
+      - MumbleBot/MumbleBot.exe.sig
+
