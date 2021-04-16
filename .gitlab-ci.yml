@@ -42,7 +42,7 @@ sign-win:
   artifacts:
     name: MumbleBot-win-x64
     paths:
-      -  publish/win-x64
+      -  win-x64
 sign-linux:
   stage: sign
   tags:
@@ -57,5 +57,5 @@ sign-linux:
   artifacts:
     name: MumbleBot-linux-x64
     paths:
-      -  publish/linux-x64
+      -  linux-x64
 
