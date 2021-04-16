@@ -38,6 +38,7 @@ sign-win:
     - "export GPG_TTY=$(tty)"
     - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
     - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig --detach-sig publish/win-x64/MumbleBot.exe"
+    - "mv publish/win-x64 ."
   artifacts:
     name: MumbleBot-win-x64
     paths:
@@ -52,6 +53,7 @@ sign-linux:
     - "export GPG_TTY=$(tty)"
     - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
     - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig --detach-sig publish/linux-x64/MumbleBot"
+    - "mv publish/linux-x64 ."
   artifacts:
     name: MumbleBot-linux-x64
     paths:
