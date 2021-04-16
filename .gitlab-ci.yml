@@ -28,7 +28,7 @@ win-x64:
     paths:
       - ./publish
 
-sign:
+sign-win:
   stage: sign
   tags:
     - Linux
@@ -36,14 +36,24 @@ sign:
   script:
     - "apt-get update && apt-get install -y gpg"
     - "export GPG_TTY=$(tty)"
-    - "export"
-    - "ls -lhas $GPG_KEY"
-    - "echo $GPG_KEY"
     - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
     - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig --detach-sig publish/win-x64/MumbleBot.exe"
+  artifacts:
+    name: MumbleBot-win-x64
+    paths:
+      -  publish/win-x64
+sign-linux:
+  stage: sign
+  tags:
+    - Linux
+    - Docker
+  script:
+    - "apt-get update && apt-get install -y gpg"
+    - "export GPG_TTY=$(tty)"
+    - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
     - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig --detach-sig publish/linux-x64/MumbleBot"
   artifacts:
-    name: SignedFiles
+    name: MumbleBot-linux-x64
     paths:
-      -  publish
+      -  publish/linux-x64
 
