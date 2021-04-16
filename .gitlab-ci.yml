@@ -36,11 +36,11 @@ sign:
   script:
     - "apt-get update && apt-get install -y gpg"
     - "export GPG_TTY=$(tty)"
-    - "ls -lhas publish"
     - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
-    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output MumbleBot/MumbleBot.exe.sig --detach-sig MumbleBot.exe"
+    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig --detach-sig publish/win-x64/MumbleBot.exe"
+    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig --detach-sig publish/linux-x64/MumbleBot"
   artifacts:
     name: SignedFiles
     paths:
-      - MumbleBot/MumbleBot.exe.sig
+      -  publish
 
