@@ -1,28 +1,61 @@
 image: "mcr.microsoft.com/dotnet/sdk:5.0"
 
 stages:
-  - Build
+  - build
+  - sign
 
-Build [Linux x64]:
-  stage: Build
+linux-x64:
+  stage: build
   tags:
     - Docker
   script:
     - dotnet restore
     - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
-    - mv publish/linux-x64 MumbleBot
   artifacts:
+    name: MumbleBot-linux-x64
     paths:
-      - ./MumbleBot
+      - ./publish
 
-Build [Windows x64]:
-  stage: Build
+win-x64:
+  stage: build
   tags:
     - Docker
   script:
     - dotnet restore
     - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
-    - mv publish/win-x64/ MumbleBot/
   artifacts:
+    name: MumbleBot-win-x64
     paths:
-      - ./MumbleBot
+      - ./publish
+
+sign-win:
+  stage: sign
+  tags:
+    - Linux
+    - Docker
+  script:
+    - "apt-get update && apt-get install -y gpg"
+    - "export GPG_TTY=$(tty)"
+    - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
+    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig --detach-sig publish/win-x64/MumbleBot.exe"
+    - "mv publish/win-x64 ."
+  artifacts:
+    name: MumbleBot-win-x64
+    paths:
+      -  win-x64
+sign-linux:
+  stage: sign
+  tags:
+    - Linux
+    - Docker
+  script:
+    - "apt-get update && apt-get install -y gpg"
+    - "export GPG_TTY=$(tty)"
+    - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
+    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig --detach-sig publish/linux-x64/MumbleBot"
+    - "mv publish/linux-x64 ."
+  artifacts:
+    name: MumbleBot-linux-x64
+    paths:
+      -  linux-x64
+
