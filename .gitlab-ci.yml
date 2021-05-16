@@ -65,5 +65,7 @@ sign-linux:
     - linux-x64
 sast:
   stage: test
+  tags:
+  - Docker
 include:
 - template: Security/SAST.gitlab-ci.yml
