@@ -1,61 +1,71 @@
-image: "mcr.microsoft.com/dotnet/sdk:5.0"
-
+# You can override the included template(s) by including variable overrides
+# See https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#priority-of-environment-variables
+image: mcr.microsoft.com/dotnet/sdk:5.0
 stages:
-  - build
-  - sign
-
+- build
+- sign
+- test
 linux-x64:
   stage: build
   tags:
-    - Docker
+  - Docker
   script:
-    - dotnet restore
-    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
+  - dotnet restore
+  - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
   artifacts:
     name: MumbleBot-linux-x64
     paths:
-      - ./publish
-
+    - "./publish"
 win-x64:
   stage: build
   tags:
-    - Docker
+  - Docker
   script:
-    - dotnet restore
-    - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
+  - dotnet restore
+  - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
   artifacts:
     name: MumbleBot-win-x64
     paths:
-      - ./publish
-
+    - "./publish"
 sign-win:
   stage: sign
+  allow_failure: true
   tags:
-    - Linux
-    - Docker
+  - Linux
+  - Docker
   script:
-    - "apt-get update && apt-get install -y gpg"
-    - "export GPG_TTY=$(tty)"
-    - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
-    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig --detach-sig publish/win-x64/MumbleBot.exe"
-    - "mv publish/win-x64 ."
+  - apt-get update && apt-get install -y gpg
+  - export GPG_TTY=$(tty)
+  - gpg --no-tty --batch --yes --import <(cat $GPG_KEY)
+  - gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig
+    --detach-sig publish/win-x64/MumbleBot.exe
+  - mv publish/win-x64 .
   artifacts:
     name: MumbleBot-win-x64
     paths:
-      -  win-x64
+    - win-x64
 sign-linux:
   stage: sign
+  allow_failure: true
   tags:
-    - Linux
-    - Docker
+  - Linux
+  - Docker
   script:
-    - "apt-get update && apt-get install -y gpg"
-    - "export GPG_TTY=$(tty)"
-    - "gpg --no-tty --batch --yes --import <(cat $GPG_KEY)"
-    - "gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig --detach-sig publish/linux-x64/MumbleBot"
-    - "mv publish/linux-x64 ."
+  - apt-get update && apt-get install -y gpg
+  - export GPG_TTY=$(tty)
+  - gpg --no-tty --batch --yes --import <(cat $GPG_KEY)
+  - gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig
+    --detach-sig publish/linux-x64/MumbleBot
+  - mv publish/linux-x64 .
   artifacts:
     name: MumbleBot-linux-x64
     paths:
-      -  linux-x64
-
+    - linux-x64
+sast:
+  stage: test
+  tags:
+  - Docker
+include:
+- template: Security/SAST.gitlab-ci.yml
