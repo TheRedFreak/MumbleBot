@@ -31,6 +31,7 @@ win-x64:
     - "./publish"
 sign-win:
   stage: sign
+  allow_failure: true
   tags:
   - Linux
   - Docker
@@ -47,6 +48,7 @@ sign-win:
     - win-x64
 sign-linux:
   stage: sign
+  allow_failure: true
   tags:
   - Linux
   - Docker
