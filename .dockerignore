@@ -1,0 +1,6 @@
+﻿*
+
+!*.cs
+!*.config
+!*.csproj
+!*.sln
