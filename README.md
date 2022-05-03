@@ -1,10 +1,10 @@
 ## MumbleBot
 
-![Build Status](https://gitlab.mernacher.cloud/the_red_freak/mumblebot/badges/master/pipeline.svg)  
+![Build Status](https://gitlab.mernacher.at/the_red_freak/mumblebot/badges/master/pipeline.svg)  
 
-[Latest windows download (with signature)](https://gitlab.mernacher.cloud/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=sign-win)  
-[Latest linux download (with signature)](https://gitlab.mernacher.cloud/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=sign-linux)  
-[Latest windows download](https://gitlab.mernacher.cloud/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=win-x64)  
-[Latest linux download](https://gitlab.mernacher.cloud/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=linux-x64)  
+[Latest windows download (with signature)](https://gitlab.mernacher.at/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=sign-win)  
+[Latest linux download (with signature)](https://gitlab.mernacher.at/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=sign-linux)  
+[Latest windows download](https://gitlab.mernacher.at/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=win-x64)  
+[Latest linux download](https://gitlab.mernacher.at/the_red_freak/mumblebot/-/jobs/artifacts/master/download?job=linux-x64)  
 
 Public-Key available in ./.gpg/
