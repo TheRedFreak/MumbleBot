@@ -4,68 +4,89 @@
 # See https://docs.gitlab.com/ee/ci/variables/#priority-of-environment-variables
 image: mcr.microsoft.com/dotnet/sdk:5.0
 stages:
-- build
-- sign
-- test
+  - build
+  - sign
+  - test
+  - qodana
 linux-x64:
   stage: build
   tags:
-  - Docker
+    - Docker
   script:
-  - dotnet restore
-  - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
+    - dotnet restore
+    - dotnet publish -r linux-x64 -c Release -p:PublishSingleFile=true -o ./publish/linux-x64
   artifacts:
     name: MumbleBot-linux-x64
     paths:
-    - "./publish"
+      - "./publish"
 win-x64:
   stage: build
   tags:
-  - Docker
+    - Docker
   script:
-  - dotnet restore
-  - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
+    - dotnet restore
+    - dotnet publish -r win-x64 -c Release -p:PublishSingleFile=true -o ./publish/win-x64
   artifacts:
     name: MumbleBot-win-x64
     paths:
-    - "./publish"
+      - "./publish"
 sign-win:
   stage: sign
   allow_failure: true
   tags:
-  - Linux
-  - Docker
+    - Linux
+    - Docker
   script:
-  - apt-get update && apt-get install -y gpg
-  - export GPG_TTY=$(tty)
-  - gpg --no-tty --batch --yes --import <(cat $GPG_KEY)
-  - gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig
-    --detach-sig publish/win-x64/MumbleBot.exe
-  - mv publish/win-x64 .
+    - apt-get update && apt-get install -y gpg
+    - export GPG_TTY=$(tty)
+    - gpg --no-tty --batch --yes --import <(cat $GPG_KEY)
+    - gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/win-x64/MumbleBot.exe.sig
+      --detach-sig publish/win-x64/MumbleBot.exe
+    - mv publish/win-x64 .
   artifacts:
     name: MumbleBot-win-x64
     paths:
-    - win-x64
+      - win-x64
 sign-linux:
   stage: sign
   allow_failure: true
   tags:
-  - Linux
-  - Docker
+    - Linux
+    - Docker
   script:
-  - apt-get update && apt-get install -y gpg
-  - export GPG_TTY=$(tty)
-  - gpg --no-tty --batch --yes --import <(cat $GPG_KEY)
-  - gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig
-    --detach-sig publish/linux-x64/MumbleBot
-  - mv publish/linux-x64 .
+    - apt-get update && apt-get install -y gpg
+    - export GPG_TTY=$(tty)
+    - gpg --no-tty --batch --yes --import <(cat $GPG_KEY)
+    - gpg --no-tty --batch --yes --pinentry-mode loopback --output publish/linux-x64/MumbleBot.sig
+      --detach-sig publish/linux-x64/MumbleBot
+    - mv publish/linux-x64 .
   artifacts:
     name: MumbleBot-linux-x64
     paths:
-    - linux-x64
+      - linux-x64
 sast:
   stage: test
   tags:
-  - Docker
+    - Docker
 include:
-- template: Security/SAST.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
+qodana:
+  stage: qodana
+  only:
+    - main
+    - merge_requests
+  image:
+    name: jetbrains/qodana-<linter>
+    entrypoint: [""]
+  variables:
+    QODANA_REMOTE_URL: git@$CI_SERVER_HOST:$CI_PROJECT_PATH.git
+    QODANA_BRANCH: $CI_COMMIT_BRANCH
+    QODANA_REPO_URL: $CI_PROJECT_URL
+    QODANA_JOB_URL: $CI_JOB_URL
+  script:
+    - qodana --save-report --results-dir=$CI_PROJECT_DIR/qodana --report-dir=$CI_PROJECT_DIR/qodana/report
+  artifacts:
+    paths:
+      - qodana/report/
+    expose_as: "Qodana report"
