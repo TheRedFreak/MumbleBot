@@ -24,6 +24,8 @@ namespace MumbleBot
         {
             Thread.CurrentThread.Name = "MainThread";
 
+            // This is for testing qodana
+
             AppDomain.CurrentDomain.ProcessExit += (_, _) => stopRequested = true; // Cannot cancel this event...
             Console.CancelKeyPress += (object sender, ConsoleCancelEventArgs e) => {
                 e.Cancel = true;
