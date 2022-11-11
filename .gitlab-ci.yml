@@ -76,6 +76,7 @@ qodana:
   only:
     - main
     - merge_requests
+    - ci-test-qodana
   image:
     name: jetbrains/qodana-<linter>
     entrypoint: [""]
